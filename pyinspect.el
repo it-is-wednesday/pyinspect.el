@@ -38,27 +38,47 @@ def _pyinspect(obj):
 
     members = sorted(getmembers(obj), key=underline_count)
     members = map(stringify_vals, members)
-    return print(json.dumps(dict(members)))
-")
-
+    return print(json.dumps(dict(members)))")
 
 (define-derived-mode pyinspect-mode special-mode "Python Inspector"
-  (python-shell-send-string pyinspect--boilerplate)
+  (python-shell-send-string-no-output pyinspect--boilerplate)
   (set-syntax-table python-mode-syntax-table))
 
-(defun pyinspect-inspect (obj-name)
+(defun pyinspect--make-key-callback (obj-name)
+  "To be called when a field name of inspected object OBJ-NAME is clicked."
+  (lambda (_btn)
+    (pyinspect--inspect obj-name nil)))
+
+(defun pyinspect--inspect-in-current-buffer (obj-name)
+  "Inspect object OBJ-NAME in current pyinspect buffer."
   (let ((buffer-read-only nil)
         (members (json-read-from-string
                   (python-shell-send-string-no-output
                    (format "_pyinspect(%s)" obj-name)))))
     (erase-buffer)
     (cl-loop for (k . v) in members
-             do (insert (symbol-name k) "\t" v "\n"))
+             do
+             (insert-button (symbol-name k)
+                            'action (pyinspect--make-key-callback
+                                     (format "%s.%s" obj-name k)))
+             (insert " = " (if (equal "" v) "\"\"" v) "\n"))
+    (goto-char (point-min))))
 
-    ;; (insert-button
-    ;;  "based"
-    ;;  'action #'pyinspect-based)
-    ))
+(defun pyinspect--inspect (obj-name pop)
+  "Inspect OBJ-NAME in a new buffer.
+If POP is non-nil, new buffer will be created with `pop-to-buffer'. Otherwise
+replaces current buffer."
+  (let ((buf-func (if pop #'pop-to-buffer #'generate-new-buffer))
+        (buf-name (format "Pyinspect: %s" obj-name)))
+    (funcall buf-func buf-name)
+    (switch-to-buffer buf-name))
+  (pyinspect-mode)
+  (pyinspect--inspect-in-current-buffer obj-name))
+
+(defun pyinspect-inspect-at-point ()
+  "Inspect symbol at point in pyinspect-mode."
+  (interactive)
+  (pyinspect--inspect (symbol-at-point) 'pop))
 
 (provide 'pyinspect)
 ;;; pyinspect.el ends here
