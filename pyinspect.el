@@ -47,11 +47,14 @@ def _pyinspect(obj):
   (set-syntax-table python-mode-syntax-table))
 
 (defun pyinspect-goto-parent-object ()
+  "Inspect parent object of currently inspected object.
+E.g. if we're inspecting `x.y.z', this function switches to buffer `x.y'.
+If this objecet has no parent, quit all pyinspect buffers."
   (interactive)
   (let ((elem (pop pyinspect--history)))
     (if elem
         (switch-to-buffer elem)
-      (delete-window))))
+      (pyinspect-kill-all-buffers))))
 
 (defun pyinspect--make-key-callback (obj-name)
   "To be called when a field name of inspected object OBJ-NAME is clicked."
@@ -88,9 +91,17 @@ replaces current buffer."
 (defun pyinspect-inspect-at-point ()
   "Inspect symbol at point in pyinspect-mode."
   (interactive)
+  (setq pyinspect--history '())
   (pyinspect--inspect (symbol-at-point) 'pop))
 
+(defun pyinspect-kill-all-buffers ()
+  "Kill all pyinspect inspection buffers and delete current window."
+  (interactive)
+  (kill-matching-buffers "Pyinspect: " nil t)
+  (delete-window))
+
 (define-key pyinspect-mode-map "h" #'pyinspect-goto-parent-object)
+(define-key pyinspect-mode-map "q" #'pyinspect-kill-all-buffers)
 
 (provide 'pyinspect)
 ;;; pyinspect.el ends here
