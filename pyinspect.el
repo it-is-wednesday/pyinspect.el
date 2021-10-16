@@ -101,6 +101,7 @@ replaces current buffer."
   (delete-window))
 
 (define-key pyinspect-mode-map "h" #'pyinspect-goto-parent-object)
+(define-key pyinspect-mode-map "u" #'pyinspect-goto-parent-object)
 (define-key pyinspect-mode-map "q" #'pyinspect-kill-all-buffers)
 
 (provide 'pyinspect)

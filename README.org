@@ -1,0 +1,22 @@
+* pyinspect.el
+
+Major mode for inspecting object in a running Python process 🥴
+
+[[./demo.gif]]
+
+** Setup
+#+begin_src emacs-lisp
+(load-file "/path/to/pyinspect.el")
+(define-key python-mode-map (kbd "C-c i") #'pyinspect-inspect-at-point)
+#+end_src
+** Usage
+Eval a Python buffer in a Python process (usually =C-c C-c= once you're in the buffer), then place
+your cursor on a variable and hit =C-c i= to open the inspection buffer
+*** Default keybindings
+|-----------+-----------------------------------------------|
+| =RET=     | Inspect field at point                        |
+|-----------+-----------------------------------------------|
+| =h= / =u= | Go back to parent inspection buffer           |
+|-----------+-----------------------------------------------|
+| =q=       | Kill all inspection buffers and delete window |
+|-----------+-----------------------------------------------|
