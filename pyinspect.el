@@ -18,6 +18,7 @@
 ;; Inspect objects in existing Python REPL
 ;;
 ;;; Code:
+
 (require 'python)
 
 (defvar pyinspect--boilerplate "
@@ -30,7 +31,6 @@ def _pyinspect(obj):
         key, val = members
         type_weight = 3 if ismethod(val) else 0
         return key.count('_', 0, 2) * 2 + type_weight
-
 
     def stringify_vals(members):
         key, val = members
@@ -45,16 +45,6 @@ def _pyinspect(obj):
 (define-derived-mode pyinspect-mode special-mode "Python Inspector"
   (python-shell-send-string-no-output pyinspect--boilerplate)
   (set-syntax-table python-mode-syntax-table))
-
-(defun pyinspect-goto-parent-object ()
-  "Inspect parent object of currently inspected object.
-E.g. if we're inspecting `x.y.z', this function switches to buffer `x.y'.
-If this objecet has no parent, quit all pyinspect buffers."
-  (interactive)
-  (let ((elem (pop pyinspect--history)))
-    (if elem
-        (switch-to-buffer elem)
-      (pyinspect-kill-all-buffers))))
 
 (defun pyinspect--make-key-callback (obj-name)
   "To be called when a field name of inspected object OBJ-NAME is clicked."
@@ -87,6 +77,16 @@ replaces current buffer."
     (switch-to-buffer buf-name))
   (pyinspect-mode)
   (pyinspect--inspect-in-current-buffer obj-name))
+
+(defun pyinspect-goto-parent-object ()
+  "Inspect parent object of currently inspected object.
+E.g. if we're inspecting `x.y.z', this function switches to buffer `x.y'.
+If this objecet has no parent, quit all pyinspect buffers."
+  (interactive)
+  (let ((elem (pop pyinspect--history)))
+    (if elem
+        (switch-to-buffer elem)
+      (pyinspect-kill-all-buffers))))
 
 (defun pyinspect-inspect-at-point ()
   "Inspect symbol at point in pyinspect-mode."
