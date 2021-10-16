@@ -1,4 +1,4 @@
-;;; pyinspect.el -*- lexical-binding: t; -*-
+;;; pyinspect.el --- Python object inspector -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2021 Maor Kadosh
 ;;
@@ -15,7 +15,7 @@
 ;;
 ;;; Commentary:
 ;;
-;;
+;; Inspect objects in existing Python REPL
 ;;
 ;;; Code:
 (require 'python)
@@ -40,13 +40,23 @@ def _pyinspect(obj):
     members = map(stringify_vals, members)
     return print(json.dumps(dict(members)))")
 
+(defvar pyinspect--history '())
+
 (define-derived-mode pyinspect-mode special-mode "Python Inspector"
   (python-shell-send-string-no-output pyinspect--boilerplate)
   (set-syntax-table python-mode-syntax-table))
 
+(defun pyinspect-goto-parent-object ()
+  (interactive)
+  (let ((elem (pop pyinspect--history)))
+    (if elem
+        (switch-to-buffer elem)
+      (delete-window))))
+
 (defun pyinspect--make-key-callback (obj-name)
   "To be called when a field name of inspected object OBJ-NAME is clicked."
   (lambda (_btn)
+    (push (buffer-name) pyinspect--history)
     (pyinspect--inspect obj-name nil)))
 
 (defun pyinspect--inspect-in-current-buffer (obj-name)
@@ -79,6 +89,8 @@ replaces current buffer."
   "Inspect symbol at point in pyinspect-mode."
   (interactive)
   (pyinspect--inspect (symbol-at-point) 'pop))
+
+(define-key pyinspect-mode-map "h" #'pyinspect-goto-parent-object)
 
 (provide 'pyinspect)
 ;;; pyinspect.el ends here
