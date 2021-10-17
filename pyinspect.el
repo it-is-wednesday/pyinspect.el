@@ -67,8 +67,7 @@
 
       ("collection"
        (let ((items (alist-get 'items json)))
-         (cl-loop for i from 0 to (- (length items) 1)
-                  do
+         (cl-loop for i from 0 to (- (length items) 1) do
                   (insert-button (format "%s: " i)
                                  'face pyinspect--primary-face
                                  'action (pyinspect--make-key-callback
@@ -77,16 +76,11 @@
 
       ("dict"
        (let ((items (pyinspect--fix-json-bools (alist-get 'items json))))
-         (cl-loop for (k . (v)) in items
-                  do
-                  (print (char-or-string-p k))
+         (cl-loop for (k . (v)) in items do
                   (insert-button (format "%s: " k)
                                  'face pyinspect--primary-face
                                  'action (pyinspect--make-key-callback
-                                          (format "%s[%s]" obj-name
-                                                  (if (stringp k)
-                                                      (format "\"%s\"" k)
-                                                    k))))
+                                          (format "%s[%s]" obj-name k)))
                   (insert (format "%s\n" v)))))
 
       ("object"
