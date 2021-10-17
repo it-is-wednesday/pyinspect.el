@@ -22,23 +22,44 @@
 (require 'python)
 
 (defvar pyinspect--boilerplate "
-from inspect import getmembers, ismethod
 import json
+from inspect import getmembers, isbuiltin, ismethod
+from itertools import filterfalse
 
 
 def _pyinspect(obj):
-    def underline_count(members):
-        key, val = members
+    if type(obj) in (str, bool, int, float, complex):
+        return 'primitive'
+
+    def underline_count(member):
+        key, val = member
         type_weight = 3 if ismethod(val) else 0
         return key.count('_', 0, 2) * 2 + type_weight
 
-    def stringify_vals(members):
-        key, val = members
-        return key, str(val)
+    def stringify_val(member):
+        key, val = member
+        return key, f'\"{val}\"' if type(val) is str else str(val)
 
+    def is_trash(member):
+        key, val = member
+        return (
+            key in ['__doc__', '__class__']
+            or ismethod(val)
+            or isbuiltin(val)
+            or type(val).__name__ == 'method-wrapper'
+        )
+
+    # getmembers() returns a tuple of (fieldname, value)
     members = sorted(getmembers(obj), key=underline_count)
-    members = map(stringify_vals, members)
-    return print(json.dumps(dict(members)))")
+    members = filterfalse(is_trash, members)
+    members = map(stringify_val, members)
+
+    return dict(members)
+
+
+def _pyinspect_pprint(obj):
+    print(json.dumps(_pyinspect(obj), indent=4))
+")
 
 (defvar pyinspect--history '())
 
@@ -55,16 +76,19 @@ def _pyinspect(obj):
 (defun pyinspect--inspect-in-current-buffer (obj-name)
   "Inspect object OBJ-NAME in current pyinspect buffer."
   (let ((buffer-read-only nil)
-        (members (json-read-from-string
-                  (python-shell-send-string-no-output
-                   (format "_pyinspect(%s)" obj-name)))))
+        (json (json-read-from-string
+               (python-shell-send-string-no-output
+                (format "_pyinspect_pprint(%s)" obj-name)))))
     (erase-buffer)
-    (cl-loop for (k . v) in members
-             do
-             (insert-button (symbol-name k)
-                            'action (pyinspect--make-key-callback
-                                     (format "%s.%s" obj-name k)))
-             (insert " = " (if (equal "" v) "\"\"" v) "\n"))
+    (if (and (equal json "primitive"))
+        (insert (python-shell-send-string-no-output
+                 (format "print(%s)" obj-name)))
+      (cl-loop for (k . v) in json
+               do
+               (insert-button (symbol-name k)
+                              'action (pyinspect--make-key-callback
+                                       (format "%s.%s" obj-name k)))
+               (insert " = " (if (equal "" v) "\"\"" v) "\n")))
     (goto-char (point-min))))
 
 (defun pyinspect--inspect (obj-name pop)
@@ -85,8 +109,7 @@ If this objecet has no parent, quit all pyinspect buffers."
   (interactive)
   (let ((elem (pop pyinspect--history)))
     (if elem
-        (switch-to-buffer elem)
-      (pyinspect-kill-all-buffers))))
+        (switch-to-buffer elem))))
 
 (defun pyinspect-inspect-at-point ()
   "Inspect symbol at point in pyinspect-mode."

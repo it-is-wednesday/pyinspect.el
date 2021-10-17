@@ -1,6 +1,6 @@
 * pyinspect.el
 
-Major mode for inspecting object in a running Python process 🥴
+Major mode for inspecting objects in a running Python process 🥴
 
 [[./demo.gif]]
 
