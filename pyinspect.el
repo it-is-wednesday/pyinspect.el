@@ -9,7 +9,7 @@
 ;; Version: 0.0.1
 ;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames games hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex tools unix vc wp
 ;; Homepage: https://github.com/ah/pyinspect
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "27.1"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -128,9 +128,11 @@ If this objecet has no parent, quit all pyinspect buffers."
 (defun pyinspect-kill-all-buffers ()
   "Kill all pyinspect inspection buffers."
   (interactive)
-  (kill-matching-buffers "Pyinspect: " nil t))
+  (kill-matching-buffers "Pyinspect: " nil t)
+  (previous-window-any-frame))
 
 (define-key pyinspect-mode-map "h" #'pyinspect-goto-parent-object)
+(define-key pyinspect-mode-map "l" #'push-button) ;; emulate RET
 (define-key pyinspect-mode-map "u" #'pyinspect-goto-parent-object)
 (define-key pyinspect-mode-map "q" #'pyinspect-kill-all-buffers)
 
