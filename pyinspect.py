@@ -11,12 +11,12 @@ def _pyinspect_inspect_object(obj):
 
     def stringify_val(member):
         key, val = member
-        return key, f'\"{val}\"' if type(val) is str else str(val)
+        return key, f'"{val}"' if type(val) is str else str(val)
 
     def is_trash(member):
         key, val = member
         return (
-            key in ["__doc__", "__class__"]
+            key in ["__doc__", "__class__", "__hash__"]
             or ismethod(val)
             or isbuiltin(val)
             or type(val).__name__ == "method-wrapper"
@@ -34,11 +34,23 @@ def _pyinspect(obj):
     if type(obj) in (str, bool, int, float, complex):
         return {"type": "primitive", "value": obj}
 
-    if type(obj) in (tuple, list):
+    elif type(obj) in (tuple, list):
         return {"type": "collection", "items": obj}
+
+    elif type(obj) is dict:
+
+        def add_quotes(key):
+            """
+            Surrounds string key with extra quotes because Emacs parses them as just symbols
+            and makes it hard to distinguish between them and non-string symbols
+            """
+            return f'"{key}"' if type(key) is str else key
+
+        return {"type": "dict", "items": {add_quotes(k): v for (k, v) in obj.items()}}
 
     else:
         return {"type": "object", "members": _pyinspect_inspect_object(obj)}
+
 
 def _pyinspect_pprint(obj):
     print(json.dumps(_pyinspect(obj), indent=4))

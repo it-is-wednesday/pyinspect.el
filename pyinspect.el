@@ -35,6 +35,14 @@
      (buffer-string)))
   (set-syntax-table python-mode-syntax-table))
 
+(defun pyinspect--fix-json-bools (json)
+  "Replace t and `:json-false' with 'True' and 'False' in JSON."
+  (cl-loop for (k . v) in json
+           collect (list k (pcase v
+                             (:json-false "False")
+                             ('t "True")
+                             (_ v)))))
+
 (defun pyinspect--make-key-callback (obj-name)
   "To be called when a field name of inspected object OBJ-NAME is clicked."
   (lambda (_btn)
@@ -51,7 +59,11 @@
 
     (pcase (alist-get 'type json)
       ("primitive"
-       (insert (format "%s" (alist-get 'value json))))
+       (let ((val (alist-get 'value json)))
+         (insert (format "%s" (pcase val
+                                (:json-false "False")
+                                ('t "True")
+                                (_ val))))))
 
       ("collection"
        (let ((items (alist-get 'items json)))
@@ -62,6 +74,20 @@
                                  'action (pyinspect--make-key-callback
                                           (format "%s[%s]" obj-name i)))
                   (insert (format "%s\n" (elt items i))))))
+
+      ("dict"
+       (let ((items (pyinspect--fix-json-bools (alist-get 'items json))))
+         (cl-loop for (k . (v)) in items
+                  do
+                  (print (char-or-string-p k))
+                  (insert-button (format "%s: " k)
+                                 'face pyinspect--primary-face
+                                 'action (pyinspect--make-key-callback
+                                          (format "%s[%s]" obj-name
+                                                  (if (stringp k)
+                                                      (format "\"%s\"" k)
+                                                    k))))
+                  (insert (format "%s\n" v)))))
 
       ("object"
        (cl-loop for (k . v) in (alist-get 'members json) do
