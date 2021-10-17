@@ -21,6 +21,8 @@
 
 (require 'python)
 
+(defvar pyinspect--primary-face '(:foreground "#fcabaf"))
+
 (defvar pyinspect--history '())
 
 (defvar pyinspect--python-boilerplate-file-path
@@ -46,15 +48,29 @@
                (python-shell-send-string-no-output
                 (format "_pyinspect_pprint(%s)" obj-name)))))
     (erase-buffer)
-    (if (and (equal json "primitive"))
-        (insert (python-shell-send-string-no-output
-                 (format "print(%s)" obj-name)))
-      (cl-loop for (k . v) in json
-               do
-               (insert-button (symbol-name k)
-                              'action (pyinspect--make-key-callback
-                                       (format "%s.%s" obj-name k)))
-               (insert " = " (if (equal "" v) "\"\"" v) "\n")))
+
+    (pcase (alist-get 'type json)
+      ("primitive"
+       (insert (format "%s" (alist-get 'value json))))
+
+      ("collection"
+       (let ((items (alist-get 'items json)))
+         (cl-loop for i from 0 to (- (length items) 1)
+                  do
+                  (insert-button (format "%s: " i)
+                                 'face pyinspect--primary-face
+                                 'action (pyinspect--make-key-callback
+                                          (format "%s[%s]" obj-name i)))
+                  (insert (format "%s\n" (elt items i))))))
+
+      ("object"
+       (cl-loop for (k . v) in (alist-get 'members json) do
+                (insert-button (symbol-name k)
+                               'face pyinspect--primary-face
+                               'action (pyinspect--make-key-callback
+                                        (format "%s.%s" obj-name k)))
+                (insert " = " (if (equal "" v) "\"\"" v) "\n"))))
+
     (goto-char (point-min))))
 
 (defun pyinspect--inspect (obj-name pop)
@@ -84,10 +100,9 @@ If this objecet has no parent, quit all pyinspect buffers."
   (pyinspect--inspect (symbol-at-point) 'pop))
 
 (defun pyinspect-kill-all-buffers ()
-  "Kill all pyinspect inspection buffers and delete current window."
+  "Kill all pyinspect inspection buffers."
   (interactive)
-  (kill-matching-buffers "Pyinspect: " nil t)
-  (delete-window))
+  (kill-matching-buffers "Pyinspect: " nil t))
 
 (define-key pyinspect-mode-map "h" #'pyinspect-goto-parent-object)
 (define-key pyinspect-mode-map "u" #'pyinspect-goto-parent-object)
