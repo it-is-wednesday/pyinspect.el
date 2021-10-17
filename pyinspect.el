@@ -35,6 +35,13 @@
      (buffer-string)))
   (set-syntax-table python-mode-syntax-table))
 
+(defun pyinspect--var-exists-p (var)
+  "Return t if VAR is defined in locals() of running Python process, nil otherwise."
+  (equal "True"
+         (string-trim
+          (python-shell-send-string-no-output
+           (format "'%s' in locals()" var)))))
+
 (defun pyinspect--fix-json-bools (json)
   "Replace t and `:json-false' with 'True' and 'False' in JSON."
   (cl-loop for (k . v) in json
@@ -117,7 +124,10 @@ If this objecet has no parent, quit all pyinspect buffers."
   "Inspect symbol at point in pyinspect-mode."
   (interactive)
   (setq pyinspect--history '())
-  (pyinspect--inspect (symbol-at-point) 'pop))
+  (let ((var (symbol-at-point)))
+    (if (pyinspect--var-exists-p var)
+        (pyinspect--inspect (symbol-at-point) 'pop)
+      (princ (format-message "Variable %s doesn't exist!" var)))))
 
 (defun pyinspect-kill-all-buffers ()
   "Kill all pyinspect inspection buffers."
