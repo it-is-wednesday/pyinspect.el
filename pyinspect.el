@@ -21,7 +21,7 @@
 
 (require 'python)
 
-(defvar pyinspect--primary-face '(:foreground "#fcabaf"))
+(defvar pyinspect--primary-face '(:foreground "orange red"))
 
 (defvar pyinspect--history '())
 
@@ -57,7 +57,8 @@
     (pyinspect--inspect obj-name nil)))
 
 (defun pyinspect--inspect-in-current-buffer (obj-name)
-  "Inspect object OBJ-NAME in current pyinspect buffer."
+  "Inspect object OBJ-NAME in current pyinspect buffer.
+Uses the `_pyinspect_pprint' function defined in pyinspect.el."
   (let ((buffer-read-only nil)
         (json (json-read-from-string
                (python-shell-send-string-no-output
