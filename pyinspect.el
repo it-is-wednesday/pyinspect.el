@@ -68,10 +68,14 @@ List of currently inspected object's ancestor.")
     (erase-buffer)
 
     (pcase (alist-get 'type json)
+      ;; obj is str/bool/int/float/complex (complex is a numeric type)
+      ;; Inspector will merely display its literal value
       ("primitive"
        (insert (format "%s" (pyinspect--fix-json-bool
                              (alist-get 'value json)))))
 
+      ;; tuple/list
+      ;; Display as if it's a dictionary, where indexes are the keys
       ("collection"
        (let ((items (alist-get 'items json)))
          (cl-loop for i from 0 to (- (length items) 1) do
@@ -81,6 +85,7 @@ List of currently inspected object's ancestor.")
                                           (format "%s[%s]" obj-name i)))
                   (insert (format "%s\n" (elt items i))))))
 
+      ;; Display pairs of "key: val"
       ("dict"
        (let ((;; Fix booleans in all values of the JSON alist returned by `json-read-from-string'.
               ;; See `pyinspect--fix-json-bool'
@@ -93,6 +98,8 @@ List of currently inspected object's ancestor.")
                                           (format "%s[%s]" obj-name k)))
                   (insert (format "%s\n" v)))))
 
+      ;; Everything that isn't one of the above. In this case will display "key: val" pairs
+      ;; for each field (also called here member).
       ("object"
        (cl-loop for (k . v) in (alist-get 'members json) do
                 (insert-button (symbol-name k)
