@@ -119,6 +119,7 @@ replaces current buffer."
   (pyinspect-mode)
   (pyinspect--inspect-in-current-buffer obj-name))
 
+;;;###autoload
 (defun pyinspect-goto-parent-object ()
   "Inspect parent object of currently inspected object.
 E.g. if we're inspecting `x.y.z', this function switches to buffer `x.y'.
@@ -128,6 +129,7 @@ If this objecet has no parent, quit all pyinspect buffers."
     (if elem
         (switch-to-buffer elem))))
 
+;;;###autoload
 (defun pyinspect-inspect-at-point ()
   "Inspect symbol at point in pyinspect-mode."
   (interactive)
@@ -137,6 +139,7 @@ If this objecet has no parent, quit all pyinspect buffers."
         (pyinspect--inspect (symbol-at-point) 'pop)
       (message "Variable %s doesn't exist!" var))))
 
+;;;###autoload
 (defun pyinspect-kill-all-buffers ()
   "Kill all pyinspect inspection buffers."
   (interactive)
