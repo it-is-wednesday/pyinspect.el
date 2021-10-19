@@ -10,7 +10,6 @@
 ;; This file is not part of GNU Emacs.
 ;;
 ;;; Commentary:
-;;
 ;; Inspect objects in existing Python REPL
 ;;
 ;;; Code:
@@ -44,7 +43,7 @@ List of currently inspected object's ancestor.")
            (format "'%s' in locals()" var)))))
 
 (defun pyinspect--fix-json-bool (str)
-  "If STR is t/`:json-false', return with 'True'/'False' respectively."
+  "If STR is t/`:json-false', return 'True'/'False' respectively."
   (pcase str
     (:json-false "False")
     ('t "True")
@@ -58,6 +57,11 @@ List of currently inspected object's ancestor.")
 
 (defun pyinspect--inspect-in-current-buffer (obj-name)
   "Replace current buffer content with OBJ-NAME inspection, gathered from Python process."
+  ;; Ensure we're in `pyinspect-mode'
+  (if (not (eq major-mode 'pyinspect-mode))
+      (error "This function should only be called in pyinspect-mode buffers"))
+
+  ;; Extract some details regarding OBJ from running Python process
   (let ((buffer-read-only nil)
         (json (json-read-from-string
                (python-shell-send-string-no-output
@@ -131,7 +135,7 @@ If this objecet has no parent, quit all pyinspect buffers."
 
 ;;;###autoload
 (defun pyinspect-inspect-at-point ()
-  "Inspect symbol at point in pyinspect-mode."
+  "Inspect symbol at point in `pyinspect-mode'."
   (interactive)
   (setq pyinspect--history '())
   (let ((var (symbol-at-point)))
