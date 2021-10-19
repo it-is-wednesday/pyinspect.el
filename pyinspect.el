@@ -2,14 +2,12 @@
 ;;
 ;; Copyright (C) 2021 Maor Kadosh
 ;;
-;; Author: Maor Kadosh <https://github.com/ah>
-;; Maintainer: Maor Kadosh <maorkdosh@gmail.com>
-;; Created: October 15, 2021
-;; Modified: October 15, 2021
-;; Version: 0.0.1
-;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames games hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex tools unix vc wp
-;; Homepage: https://github.com/ah/pyinspect
+;; Author: Maor Kadosh <git@avocadosh.xyz>
+;; URL: https://github.com/it-is-wednesday/pyinspect.el
+;; Version: 0.1
 ;; Package-Requires: ((emacs "27.1"))
+;; SPDX-License-Identifier: GPL-3.0-or-later
+;; Keywords: tools
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -23,12 +21,17 @@
 
 (defvar pyinspect--primary-face '(:foreground "orange red"))
 
-(defvar pyinspect--history '())
+(defvar pyinspect--history '()
+  "Stack of current inspection path.
+List of currently inspected object's ancestor.")
 
 (defvar pyinspect--python-boilerplate-file-path
   (concat (file-name-directory load-file-name) "pyinspect.py"))
 
 (define-derived-mode pyinspect-mode special-mode "Python Inspector"
+  ;; Evaluate boilerplate file in current Python process.
+  ;; I'm not using `python-shell-send-file' since it litters the process output
+  ;; and prevents us from reading JSON output later on
   (python-shell-send-string-no-output
    (with-temp-buffer
      (insert-file-contents pyinspect--python-boilerplate-file-path)
@@ -42,13 +45,12 @@
           (python-shell-send-string-no-output
            (format "'%s' in locals()" var)))))
 
-(defun pyinspect--fix-json-bools (json)
-  "Replace t and `:json-false' with 'True' and 'False' in JSON."
-  (cl-loop for (k . v) in json
-           collect (list k (pcase v
-                             (:json-false "False")
-                             ('t "True")
-                             (_ v)))))
+(defun pyinspect--fix-json-bool (str)
+  "If STR is t/`:json-false', return with 'True'/'False' respectively."
+  (pcase str
+    (:json-false "False")
+    ('t "True")
+    (_ str)))
 
 (defun pyinspect--make-key-callback (obj-name)
   "To be called when a field name of inspected object OBJ-NAME is clicked."
@@ -57,21 +59,18 @@
     (pyinspect--inspect obj-name nil)))
 
 (defun pyinspect--inspect-in-current-buffer (obj-name)
-  "Inspect object OBJ-NAME in current pyinspect buffer.
-Uses the `_pyinspect_pprint' function defined in pyinspect.el."
+  "Replace current buffer content with OBJ-NAME inspection, gathered from Python process."
   (let ((buffer-read-only nil)
         (json (json-read-from-string
                (python-shell-send-string-no-output
+                ;; _pyinspect_pprint is defined in pyinspect.py, loaded on pyinspect-mode entrance
                 (format "_pyinspect_pprint(%s)" obj-name)))))
     (erase-buffer)
 
     (pcase (alist-get 'type json)
       ("primitive"
-       (let ((val (alist-get 'value json)))
-         (insert (format "%s" (pcase val
-                                (:json-false "False")
-                                ('t "True")
-                                (_ val))))))
+       (insert (format "%s" (pyinspect--fix-json-bool
+                             (alist-get 'value json)))))
 
       ("collection"
        (let ((items (alist-get 'items json)))
@@ -83,7 +82,10 @@ Uses the `_pyinspect_pprint' function defined in pyinspect.el."
                   (insert (format "%s\n" (elt items i))))))
 
       ("dict"
-       (let ((items (pyinspect--fix-json-bools (alist-get 'items json))))
+       (let ((;; Fix booleans in all values of the JSON alist returned by `json-read-from-string'.
+              ;; See `pyinspect--fix-json-bool'
+              items (cl-loop for (k . v) in (alist-get 'items json)
+                             collect (list k (pyinspect--fix-json-bool v)))))
          (cl-loop for (k . (v)) in items do
                   (insert-button (format "%s: " k)
                                  'face pyinspect--primary-face
@@ -128,7 +130,7 @@ If this objecet has no parent, quit all pyinspect buffers."
   (let ((var (symbol-at-point)))
     (if (pyinspect--var-exists-p var)
         (pyinspect--inspect (symbol-at-point) 'pop)
-      (princ (format-message "Variable %s doesn't exist!" var)))))
+      (message "Variable %s doesn't exist!" var))))
 
 (defun pyinspect-kill-all-buffers ()
   "Kill all pyinspect inspection buffers."
