@@ -1,7 +1,5 @@
 ;;; pyinspect.el --- Python object inspector -*- lexical-binding: t; -*-
 ;;
-;; Copyright (C) 2021 Maor Kadosh
-;;
 ;; Author: Maor Kadosh <git@avocadosh.xyz>
 ;; URL: https://github.com/it-is-wednesday/pyinspect.el
 ;; Version: 0.1
@@ -63,8 +61,8 @@ List of currently inspected object's ancestor.")
   (let ((buffer-read-only nil)
         (json (json-read-from-string
                (python-shell-send-string-no-output
-                ;; _pyinspect_pprint is defined in pyinspect.py, loaded on pyinspect-mode entrance
-                (format "_pyinspect_pprint(%s)" obj-name)))))
+                ;; _pyinspect_json is defined in pyinspect.py, loaded on pyinspect-mode entrance
+                (format "_pyinspect_json(%s)" obj-name)))))
     (erase-buffer)
 
     (pcase (alist-get 'type json)

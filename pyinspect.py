@@ -52,5 +52,5 @@ def _pyinspect(obj):
         return {"type": "object", "members": _pyinspect_inspect_object(obj)}
 
 
-def _pyinspect_pprint(obj):
+def _pyinspect_json(obj):
     print(json.dumps(_pyinspect(obj), indent=4))
