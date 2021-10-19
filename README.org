@@ -13,12 +13,16 @@ Major mode for inspecting objects in a running Python process 🥴
 Eval a Python buffer in a Python process (usually =C-c C-c= once you're in the buffer), then place
 your cursor on a variable and hit =C-c i= to open the inspection buffer
 *** Default keybindings
-|-----------+-----------------------------------------------|
-| Key       | Action                                        |
-|-----------+-----------------------------------------------|
-| =RET=     | Inspect field at point                        |
-|-----------+-----------------------------------------------|
-| =h= / =u= | Go back to parent inspection buffer           |
-|-----------+-----------------------------------------------|
-| =q=       | Kill all inspection buffers and delete window |
-|-----------+-----------------------------------------------|
+|-------------------+-------------------------------------|
+| Key               | Action                              |
+|-------------------+-------------------------------------|
+| =i= / =l= / =RET= | Inspect field at point              |
+|-------------------+-------------------------------------|
+| =u= / =h=         | Go back to parent inspection buffer |
+|-------------------+-------------------------------------|
+| =n= / =j=         | Next field                          |
+|-------------------+-------------------------------------|
+| =p= / =k=         | Previous field                      |
+|-------------------+-------------------------------------|
+| =q=               | Kill all inspection buffers         |
+|-------------------+-------------------------------------|

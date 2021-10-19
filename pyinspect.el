@@ -138,10 +138,19 @@ If this objecet has no parent, quit all pyinspect buffers."
   (kill-matching-buffers "Pyinspect: " nil t)
   (previous-window-any-frame))
 
-(define-key pyinspect-mode-map "h" #'pyinspect-goto-parent-object)
-(define-key pyinspect-mode-map "l" #'push-button) ;; emulate RET
-(define-key pyinspect-mode-map "u" #'pyinspect-goto-parent-object)
 (define-key pyinspect-mode-map "q" #'pyinspect-kill-all-buffers)
+
+;; vim-like bindings
+(define-key pyinspect-mode-map "l" #'push-button) ;; emulate RET
+(define-key pyinspect-mode-map "h" #'pyinspect-goto-parent-object)
+(define-key pyinspect-mode-map "j" #'next-line)
+(define-key pyinspect-mode-map "k" #'previous-line)
+
+;; normie bindings
+(define-key pyinspect-mode-map "i" #'push-button) ;; emulate RET
+(define-key pyinspect-mode-map "u" #'pyinspect-goto-parent-object)
+(define-key pyinspect-mode-map "n" #'next-line)
+(define-key pyinspect-mode-map "p" #'previous-line)
 
 (provide 'pyinspect)
 ;;; pyinspect.el ends here
