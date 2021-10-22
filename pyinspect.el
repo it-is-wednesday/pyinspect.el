@@ -62,36 +62,37 @@ List of currently inspected object's ancestor.")
       (error "This function should only be called in pyinspect-mode buffers"))
 
   ;; Extract some details regarding OBJ from running Python process
-  (let ((buffer-read-only nil)
-        (json (json-read-from-string
-               (python-shell-send-string-no-output
-                ;; _pyinspect_json is defined in pyinspect.py, loaded on pyinspect-mode entrance
-                (format "_pyinspect_json(%s)" obj-name)))))
+  (let* ((buffer-read-only nil)
+         (json (json-read-from-string
+                (python-shell-send-string-no-output
+                 ;; _pyinspect_json is defined in pyinspect.py, loaded on pyinspect-mode entrance
+                 (format "_pyinspect_json(%s)" obj-name))))
+         (type (alist-get 'type json))
+         (val (alist-get 'value json)))
     (erase-buffer)
 
-    (pcase (alist-get 'type json)
+    (pcase type
       ;; obj is str/bool/int/float/complex (complex is a numeric type)
       ;; Inspector will merely display its literal value
       ("primitive"
-       (insert (format "%s" (pyinspect--fix-json-bool
-                             (alist-get 'value json)))))
+       (insert (format "%s" (pyinspect--fix-json-bool val))))
 
       ;; tuple/list
       ;; Display as if it's a dictionary, where indexes are the keys
+      ;; `val' is a list of collection elements here.
       ("collection"
-       (let ((items (alist-get 'items json)))
-         (cl-loop for i from 0 to (- (length items) 1) do
-                  (insert-button (format "%s: " i)
-                                 'face pyinspect--primary-face
-                                 'action (pyinspect--make-key-callback
-                                          (format "%s[%s]" obj-name i)))
-                  (insert (format "%s\n" (elt items i))))))
+       (cl-loop for i from 0 to (- (length val) 1) do
+                (insert-button (format "%s: " i)
+                               'face pyinspect--primary-face
+                               'action (pyinspect--make-key-callback
+                                        (format "%s[%s]" obj-name i)))
+                (insert (format "%s\n" (elt val i)))))
 
       ;; Display pairs of "key: val"
       ("dict"
        (let ((;; Fix booleans in all values of the JSON alist returned by `json-read-from-string'.
               ;; See `pyinspect--fix-json-bool'
-              items (cl-loop for (k . v) in (alist-get 'items json)
+              items (cl-loop for (k . v) in val
                              collect (list k (pyinspect--fix-json-bool v)))))
          (cl-loop for (k . (v)) in items do
                   (insert-button (format "%s: " k)
@@ -102,8 +103,9 @@ List of currently inspected object's ancestor.")
 
       ;; Everything that isn't one of the above. In this case will display "key: val" pairs
       ;; for each field (also called here member).
+      ;; `val' is a list of object members here
       ("object"
-       (cl-loop for (k . v) in (alist-get 'members json) do
+       (cl-loop for (k . v) in val do
                 (insert-button (symbol-name k)
                                'face pyinspect--primary-face
                                'action (pyinspect--make-key-callback
