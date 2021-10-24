@@ -31,6 +31,22 @@ List of currently inspected object's ancestor.")
 (defvar pyinspect--python-boilerplate-file-path
   (concat (file-name-directory load-file-name) "pyinspect.py"))
 
+(defvar pyinspect-mode-map
+  (let ((keymap (make-sparse-keymap)))
+    (define-key keymap "q" #'pyinspect-kill-all-buffers)
+
+    ;; vim-like bindings
+    (define-key keymap "l" #'push-button) ;; emulate RET
+    (define-key keymap "h" #'pyinspect-goto-parent-object)
+    (define-key keymap "j" #'next-line)
+    (define-key keymap "k" #'previous-line)
+
+    ;; normie bindings
+    (define-key keymap "i" #'push-button) ;; emulate RET
+    (define-key keymap "u" #'pyinspect-goto-parent-object)
+    (define-key keymap "n" #'next-line)
+    (define-key keymap "p" #'previous-line)))
+
 (define-derived-mode pyinspect-mode special-mode "Python Inspector"
   ;; Evaluate boilerplate file in current Python process.
   ;; I'm not using `python-shell-send-file' since it litters the process output
@@ -157,20 +173,6 @@ If this objecet has no parent, quit all pyinspect buffers."
   (interactive)
   (kill-matching-buffers "Pyinspect: " nil t)
   (previous-window-any-frame))
-
-(define-key pyinspect-mode-map "q" #'pyinspect-kill-all-buffers)
-
-;; vim-like bindings
-(define-key pyinspect-mode-map "l" #'push-button) ;; emulate RET
-(define-key pyinspect-mode-map "h" #'pyinspect-goto-parent-object)
-(define-key pyinspect-mode-map "j" #'next-line)
-(define-key pyinspect-mode-map "k" #'previous-line)
-
-;; normie bindings
-(define-key pyinspect-mode-map "i" #'push-button) ;; emulate RET
-(define-key pyinspect-mode-map "u" #'pyinspect-goto-parent-object)
-(define-key pyinspect-mode-map "n" #'next-line)
-(define-key pyinspect-mode-map "p" #'previous-line)
 
 (provide 'pyinspect)
 ;;; pyinspect.el ends here
