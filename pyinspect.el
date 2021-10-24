@@ -81,7 +81,7 @@ List of currently inspected object's ancestor.")
   "Replace current buffer content with OBJ-NAME inspection, gathered from Python process."
   ;; Ensure we're in `pyinspect-mode'
   (if (not (eq major-mode 'pyinspect-mode))
-      (error "This function should only be called in pyinspect-mode buffers"))
+      (user-error "This function should only be called in pyinspect-mode buffers"))
 
   ;; Extract some details regarding OBJ from running Python process
   (let* ((buffer-read-only nil)
@@ -141,7 +141,7 @@ List of currently inspected object's ancestor.")
 If POP is non-nil, new buffer will be created with `pop-to-buffer'. Otherwise
 replaces current buffer."
   (let ((buf-func (if pop #'pop-to-buffer #'generate-new-buffer))
-        (buf-name (format "Pyinspect: %s" obj-name)))
+        (buf-name (format "*Pyinspect: %s*" obj-name)))
     (funcall buf-func buf-name)
     (switch-to-buffer buf-name))
   (pyinspect-mode)
@@ -171,7 +171,7 @@ If this objecet has no parent, quit all pyinspect buffers."
 (defun pyinspect-kill-all-buffers ()
   "Kill all pyinspect inspection buffers."
   (interactive)
-  (kill-matching-buffers "Pyinspect: " nil t)
+  (kill-matching-buffers "*Pyinspect: " nil t)
   (previous-window-any-frame))
 
 (provide 'pyinspect)
