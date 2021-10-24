@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import json
 from inspect import getmembers, isbuiltin, ismethod
 from itertools import filterfalse
@@ -11,7 +13,7 @@ def _pyinspect_inspect_object(obj):
 
     def stringify_val(member):
         key, val = member
-        return key, f'"{val}"' if type(val) is str else str(val)
+        return key, '"{}"'.format(val) if type(val) is str else str(val)
 
     def is_trash(member):
         key, val = member
@@ -44,7 +46,7 @@ def _pyinspect(obj):
             Surrounds string key with extra quotes because Emacs parses them as just symbols
             and makes it hard to distinguish between them and non-string symbols
             """
-            return f'"{key}"' if type(key) is str else key
+            return '"{}"'.format(key) if type(key) is str else key
 
         return {"type": "dict", "value": {add_quotes(k): v for (k, v) in obj.items()}}
 
