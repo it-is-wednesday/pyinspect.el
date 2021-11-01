@@ -29,7 +29,10 @@
 List of currently inspected object's ancestor.")
 
 (defvar pyinspect--python-boilerplate-file-path
-  (concat (file-name-directory load-file-name) "pyinspect.py"))
+  (concat
+   ;; `load-file-name' will be nil when we manually evaluate this buffer
+   (file-name-directory (or load-file-name buffer-file-name))
+   "pyinspect.py"))
 
 (defun pyinspect--var-exists-p (var)
   "Return t if VAR is defined in locals() of running Python process, nil otherwise."
