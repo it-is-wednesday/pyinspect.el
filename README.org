@@ -1,12 +1,13 @@
 * pyinspect.el
+[[https://melpa.org/#/pyinspect][file:https://melpa.org/packages/pyinspect-badge.svg]]
 
 Major mode for inspecting objects in a running Python 3 process 🥴
 
 [[./demo.gif]]
 
 ** Setup
+After installing from [[https://melpa.org/#/pyinspect][MELPA]]:
 #+begin_src emacs-lisp
-(load-file "/path/to/pyinspect.el")
 (define-key python-mode-map (kbd "C-c i") #'pyinspect-inspect-at-point)
 #+end_src
 ** Usage
