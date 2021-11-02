@@ -10,7 +10,11 @@ _pyinspect_STR_CAP = 80
 
 
 def _pyinspect_inspect_object(obj):
-    """Creates a dict of relevant fields in obj and their values"""
+    """
+    Turns a **non-primitive** obj into a dictionary of its fields and their values.
+    Filters out some built-in magic fields and pretty-prints dictionary values via `json.dumps`.
+    Doesn't display methods.
+    """
 
     def underline_count(member):
         key, val = member
@@ -21,11 +25,10 @@ def _pyinspect_inspect_object(obj):
         key, val = member
         if type(val) is str:
             return key, '"{}"'.format(val)
+        elif type(val) in (dict, tuple, list):
+            return key, _pyinspect_trim(val, _pyinspect_ITEM_CAP, _pyinspect_STR_CAP)
         else:
-            try:
-                return key, json.dumps(val, indent=4)
-            except TypeError:
-                return key, f"{str(val)} {str(type(val))}"
+            return key, f"{str(val)} {str(type(val))}"
 
     def is_trash(member):
         key, val = member
