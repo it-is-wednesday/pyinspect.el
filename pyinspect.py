@@ -2,7 +2,6 @@
 
 import json
 from inspect import getmembers, isbuiltin, ismethod
-from itertools import filterfalse
 from typing import Dict
 
 _pyinspect_ITEM_CAP = 5
@@ -15,11 +14,6 @@ def _pyinspect_inspect_object(obj):
     Filters out some built-in magic fields and pretty-prints dictionary values via `json.dumps`.
     Doesn't display methods.
     """
-
-    def underline_count(member):
-        key, val = member
-        type_weight = 3 if ismethod(val) else 0
-        return key.count("_", 0, 2) * 2 + type_weight
 
     def stringify_val(member):
         key, val = member
@@ -39,18 +33,19 @@ def _pyinspect_inspect_object(obj):
             or type(val).__name__ == "method-wrapper"
         )
 
-    # getmembers() returns a tuple of (fieldname, value)
-    members = sorted(getmembers(obj), key=underline_count)
-    members = filterfalse(is_trash, members)
-    members = map(stringify_val, members)
-
-    return dict(members)
+    return dict(stringify_val(m) for m in reversed(getmembers(obj)) if not is_trash(m))
 
 
 def _pyinspect_add_quotes(key):
     """
     Surrounds string key with extra quotes because Emacs parses them as just symbols
     and makes it hard to distinguish between them and non-string symbols
+
+    >>> _pyinspect_add_quotes("hello")
+    '"hello"'
+
+    >>> _pyinspect_add_quotes(1)
+    1
     """
     return '"{}"'.format(key) if type(key) is str else key
 
@@ -116,6 +111,7 @@ def _pyinspect_take_dict(d: Dict, n: int):
 
 def _pyinspect(obj):
     "Dispatches the appropriate inspection according to obj type"
+
     if type(obj) in (str, bool, int, float, complex):
         return {"type": "primitive", "value": obj}
 
@@ -144,7 +140,6 @@ def _pyinspect(obj):
 
 
 def _pyinspect_json(obj):
-    def default_func(problematic_obj):
-        return _pyinspect(problematic_obj)["value"]
-
-    print(json.dumps(_pyinspect(obj), indent=4, default=default_func))
+    print(
+        json.dumps(_pyinspect(obj), indent=4, default=lambda o: _pyinspect(o)["value"])
+    )
