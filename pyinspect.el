@@ -87,17 +87,19 @@ List of currently inspected object's ancestor.")
                                         (format "%s[%s]" obj-name i)))
                 (insert (format "%s\n" (elt val i)))))
 
-      ;; Display pairs of "key: val"
+      ;; Display pairs of "key: value"
       ("dict"
        (let ((;; Fix booleans in all values of the JSON alist returned by `json-read-from-string'.
               ;; See `pyinspect--fix-json-bool'
               items (cl-loop for (k . v) in val
                              collect (list k (pyinspect--fix-json-bool v)))))
          (cl-loop for (k . (v)) in items do
+                  ;; insert key
                   (insert-button (format "%s: " k)
                                  'face pyinspect--primary-face
                                  'action (pyinspect--make-key-callback
                                           (format "%s[%s]" obj-name k)))
+                  ;; insert value
                   (insert (format "%s\n" v)))))
 
       ;; Everything that isn't one of the above. In this case will display "key: val" pairs
