@@ -155,6 +155,8 @@ If this objecet has no parent, quit all pyinspect buffers."
 
 (defvar pyinspect-mode-map
   (let ((keymap (make-sparse-keymap)))
+    (define-key keymap (kbd "<tab>") #'forward-button)
+    (define-key keymap (kbd "<backtab>") #'backward-button)
     (define-key keymap "q" #'pyinspect-kill-all-buffers)
 
     ;; vim-like bindings
