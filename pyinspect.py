@@ -90,9 +90,11 @@ def _pyinspect_trim(obj, elem_cap, str_cap):
         elif type(seq) in (tuple, list):
             return seq[:elem_cap]
 
-    if type(obj) in (dict, tuple, list) and len(obj) > elem_cap:
+    if type(obj) in (dict, tuple, list):
         jsondump = json.dumps(trim_seq(obj), indent=4)
-        return f"{jsondump[:-1]}    ...\n{jsondump[-1]}"
+        if len(obj) > elem_cap:
+            return f"{jsondump[:-1]}    ...\n{jsondump[-1]}"
+        return jsondump
 
     s = str(obj)
     return f"{s[:str_cap]}..." if len(s) > str_cap else s
