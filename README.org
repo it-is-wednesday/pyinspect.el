@@ -31,3 +31,6 @@ your cursor on a variable and hit =C-c i= to open the inspection buffer
 |-------------------+-------------------------------------|
 | =q=               | Kill all inspection buffers         |
 |-------------------+-------------------------------------|
+** Background
+I wrote this package after rustling with Emacs to /try/ and get a REPL-driven development workflow
+in Python. See this [[https://blog.avocadosh.xyz/repl-driven-development-in-python][blog post]] for an idea of how to integrate this package into your cycle :)
