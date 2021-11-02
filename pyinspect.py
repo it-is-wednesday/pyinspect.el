@@ -19,12 +19,18 @@ def _pyinspect_inspect_object(obj):
 
     def stringify_val(member):
         key, val = member
-        return key, '"{}"'.format(val) if type(val) is str else str(val)
+        if type(val) is str:
+            return key, '"{}"'.format(val)
+        else:
+            try:
+                return key, json.dumps(val, indent=4)
+            except TypeError:
+                return key, f"{str(val)} {str(type(val))}"
 
     def is_trash(member):
         key, val = member
         return (
-            key in ["__doc__", "__class__", "__hash__"]
+            key in ["__doc__", "__class__", "__hash__", "__dict__"]
             or ismethod(val)
             or isbuiltin(val)
             or type(val).__name__ == "method-wrapper"
