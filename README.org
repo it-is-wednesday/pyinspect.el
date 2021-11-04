@@ -8,6 +8,7 @@ Major mode for inspecting objects in a running Python 3 process 🥴
 ** Setup
 After installing from [[https://melpa.org/#/pyinspect][MELPA]]:
 #+begin_src emacs-lisp
+(require 'pyinspect)
 (define-key python-mode-map (kbd "C-c i") #'pyinspect-inspect-at-point)
 #+end_src
 ** Usage
