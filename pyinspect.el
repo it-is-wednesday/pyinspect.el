@@ -21,6 +21,7 @@
 ;;; Code:
 
 (require 'python)
+(require 'json)
 
 (defvar pyinspect--primary-face '(:foreground "orange red"))
 
