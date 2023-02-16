@@ -1,11 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+"""
+Complementing Python code for pyinspect.el!
+
+The entry point is `_pyinspect_json`, and is the only function used by the elisp
+module. The rest are helper functions called by `_pyinspect_json`
+"""
 
 import json
 from inspect import getmembers, isbuiltin, ismethod
 from typing import Dict
 
-_pyinspect_ITEM_CAP = 5
-_pyinspect_STR_CAP = 80
+_PYINSPECT_ITEM_CAP = 5
+_PYINSPECT_STR_CAP = 80
 
 
 def _pyinspect_inspect_object(obj):
@@ -17,12 +23,11 @@ def _pyinspect_inspect_object(obj):
 
     def stringify_val(member):
         key, val = member
-        if type(val) is str:
+        if isinstance(val, str):
             return key, '"{}"'.format(val)
-        elif type(val) in (dict, tuple, list):
-            return key, _pyinspect_trim(val, _pyinspect_ITEM_CAP, _pyinspect_STR_CAP)
-        else:
-            return key, f"{str(val)} {str(type(val))}"
+        if type(val) in (dict, tuple, list):
+            return key, _pyinspect_trim(val, _PYINSPECT_ITEM_CAP, _PYINSPECT_STR_CAP)
+        return key, f"{str(val)} {str(type(val))}"
 
     def is_trash(member):
         key, val = member
@@ -119,7 +124,7 @@ def _pyinspect(obj):
         return {
             "type": "collection",
             "value": [
-                _pyinspect_trim(item, _pyinspect_ITEM_CAP, _pyinspect_STR_CAP)
+                _pyinspect_trim(item, _PYINSPECT_ITEM_CAP, _PYINSPECT_STR_CAP)
                 for item in obj
             ],
         }
@@ -129,7 +134,7 @@ def _pyinspect(obj):
             "type": "dict",
             "value": {
                 _pyinspect_add_quotes(k): _pyinspect_trim(
-                    v, _pyinspect_ITEM_CAP, _pyinspect_STR_CAP
+                    v, _PYINSPECT_ITEM_CAP, _PYINSPECT_STR_CAP
                 )
                 for (k, v) in obj.items()
             },

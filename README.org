@@ -1,7 +1,9 @@
 * pyinspect.el
 [[https://melpa.org/#/pyinspect][file:https://melpa.org/packages/pyinspect-badge.svg]]
 
-Major mode for inspecting objects in a running Python 3 process 🥴
+# TODO: Make it work on 3.3!!! see the bookmarked stackoveflow question
+# regarding compilation of 3.6 :)
+Major mode for inspecting objects in a running Python 3.3+ process 🥴
 
 [[./demo.gif]]
 
@@ -15,23 +17,23 @@ After installing from [[https://melpa.org/#/pyinspect][MELPA]]:
 Eval a Python buffer in a Python process (usually =C-c C-c= once you're in the buffer), then place
 your cursor on a variable and hit =C-c i= to open the inspection buffer
 *** Default keybindings
-|-------------------+-------------------------------------|
-| Key               | Action                              |
-|-------------------+-------------------------------------|
+|-------------+-------------------------------------|
+| Key         | Action                              |
+|-------------+-------------------------------------|
 | =i= / =l= / =RET= | Inspect field at point              |
-|-------------------+-------------------------------------|
-| =u= / =h=         | Go back to parent inspection buffer |
-|-------------------+-------------------------------------|
-| =TAB=             | Next field                          |
-|-------------------+-------------------------------------|
-| =S-TAB=           | Previous field                      |
-|-------------------+-------------------------------------|
-| =n= / =j=         | Next line                           |
-|-------------------+-------------------------------------|
-| =p= / =k=         | Previous line                       |
-|-------------------+-------------------------------------|
-| =q=               | Kill all inspection buffers         |
-|-------------------+-------------------------------------|
+|-------------+-------------------------------------|
+| =u= / =h=       | Go back to parent inspection buffer |
+|-------------+-------------------------------------|
+| =TAB=         | Next field                          |
+|-------------+-------------------------------------|
+| =S-TAB=       | Previous field                      |
+|-------------+-------------------------------------|
+| =n= / =j=       | Next line                           |
+|-------------+-------------------------------------|
+| =p= / =k=       | Previous line                       |
+|-------------+-------------------------------------|
+| =q=           | Kill all inspection buffers         |
+|-------------+-------------------------------------|
 ** Background
 I wrote this package after rustling with Emacs to /try/ and get a REPL-driven development workflow
 in Python. See this [[https://avocadosh.xyz/repl-driven-development-in-python][blog post]] for an idea of how to integrate this package into your cycle :)
